@@ -27,4 +27,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Enrollme
     // 根據課程ID查詢選課記錄 (分頁)
     @Query("SELECT e FROM Enrollment e WHERE e.course.courseId = :courseId")
     Page<Enrollment> findByCourseId(@Param("courseId") Integer courseId, Pageable pageable);
+
+    // 查詢最熱門課程 (按選課人數排序)
+    @Query("SELECT e.course.courseId as courseId, COUNT(e) as enrollmentCount " +
+           "FROM Enrollment e " +
+           "GROUP BY e.course.courseId " +
+           "ORDER BY COUNT(e) DESC")
+    List<Object[]> findTopCoursesByEnrollmentCount(Pageable pageable);
 }
