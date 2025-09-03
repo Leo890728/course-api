@@ -39,6 +39,15 @@ public class CourseService {
         return courseRepository.findAll(pageable);
     }
 
+    public List<Course> searchCourses(String keyword) {
+        return courseRepository.findByKeyword(keyword);
+    }
+
+    public Page<Course> searchCourses(String keyword, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return courseRepository.findByKeyword(keyword, pageable);
+    }
+
     public Course getCourseById(int id) throws CourseNotfoundException {
         Course course = courseRepository.findById(id).orElse(null);
         if (course == null) {

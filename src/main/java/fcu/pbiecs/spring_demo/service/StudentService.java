@@ -71,5 +71,14 @@ public class StudentService {
         return studentRepository.findStudentByEmail(email);
     }
 
+    public List<Student> searchStudents(String keyword) {
+        return studentRepository.findByKeyword(keyword);
+    }
+
+    public Page<Student> searchStudents(String keyword, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return studentRepository.findByKeyword(keyword, pageable);
+    }
+
 
 }

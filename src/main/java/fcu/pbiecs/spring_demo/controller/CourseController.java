@@ -35,8 +35,27 @@ public class CourseController {
     @GetMapping
     public ResponseEntity<List<Course>> getCourses(
             @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-            @RequestParam(value = "pageSize", required = false) Integer pageSize) {
+            @RequestParam(value = "pageSize", required = false) Integer pageSize,
+            @RequestParam(value = "search", required = false) String searchKeyword) {
 
+        // 處理搜尋功能
+        if (searchKeyword != null && !searchKeyword.trim().isEmpty()) {
+            if (pageNumber == null || pageSize == null) {
+                List<Course> courses = courseService.searchCourses(searchKeyword.trim());
+                return ResponseEntity.ok(courses);
+            }
+            if (pageNumber < 0 || pageSize < 0) {
+                throw new IllegalArgumentException("Invalid page number or page size");
+            }
+            // 搜尋 + 分頁查詢
+            Page<Course> page = courseService.searchCourses(searchKeyword.trim(), pageNumber, pageSize);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Total-Pages", String.valueOf(page.getTotalPages()));
+            headers.add("X-Total-Count", String.valueOf(page.getTotalElements()));
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        }
+
+        // 一般查詢
         if (pageNumber == null || pageSize == null) {
             List<Course> courses = courseService.getAllCourse();
             return ResponseEntity.ok(courses);
@@ -107,4 +126,5 @@ public class CourseController {
         updatedCourse.setTeacher(teacher);
         courseService.updateCourse(updatedCourse);
     }
+
 }

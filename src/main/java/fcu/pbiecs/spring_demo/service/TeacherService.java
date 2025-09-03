@@ -62,5 +62,14 @@ public class TeacherService {
         teacherRepository.deleteById(id);
     }
 
+    public List<Teacher> searchTeachers(String keyword) {
+        return teacherRepository.findByKeyword(keyword);
+    }
+
+    public Page<Teacher> searchTeachers(String keyword, int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return teacherRepository.findByKeyword(keyword, pageable);
+    }
+
 
 }
