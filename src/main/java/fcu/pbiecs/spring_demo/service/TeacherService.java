@@ -1,8 +1,12 @@
 package fcu.pbiecs.spring_demo.service;
 
+import fcu.pbiecs.spring_demo.model.Course;
 import fcu.pbiecs.spring_demo.model.Teacher;
 import fcu.pbiecs.spring_demo.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,6 +32,11 @@ public class TeacherService {
 
     public List<Teacher> getAllTeacher(){
         return teacherRepository.findAll();
+    }
+
+    public Page<Teacher> getAllTeacher(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return teacherRepository.findAll(pageable);
     }
 
     public Teacher getTeacherById(int id) throws TeacherNotfoundException {

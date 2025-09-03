@@ -7,6 +7,9 @@ import fcu.pbiecs.spring_demo.service.TeacherService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,8 +24,23 @@ public class TeacherController {
 
     @Operation(summary = "查詢所有教師", description = "取得所有教師的資訊")
     @GetMapping
-    public List<Teacher> getTeachers() {
-        return teacherService.getAllTeacher();
+    public ResponseEntity<List<Teacher>> getTeachers(
+            @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
+            @RequestParam(value = "pageSize", required = false) Integer pageSize) {
+
+        if (pageNumber == null || pageSize == null) {
+            List<Teacher> teachers = teacherService.getAllTeacher();
+            return ResponseEntity.ok(teachers);
+        }
+        if (pageNumber < 0 || pageSize < 0) {
+            throw new IllegalArgumentException("Invalid page number or page size");
+        }
+        // 分頁查詢
+        Page<Teacher> page = teacherService.getAllTeacher(pageNumber, pageSize);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Total-Pages", String.valueOf(page.getTotalPages()));
+        headers.add("X-Total-Count", String.valueOf(page.getTotalElements()));
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     @Operation(summary = "查詢教師", description = "依照ID查詢教師資訊")

@@ -1,5 +1,6 @@
 package fcu.pbiecs.spring_demo.controller;
 
+import fcu.pbiecs.spring_demo.dto.CourseEnrollmentDTO;
 import fcu.pbiecs.spring_demo.model.Course;
 import fcu.pbiecs.spring_demo.model.Enrollment;
 import fcu.pbiecs.spring_demo.model.EnrollmentId;
@@ -83,13 +84,29 @@ public class StudentController {
 
     @Operation(summary = "查詢學生選課", description = "查詢學生選課")
     @GetMapping("/{id}/courses")
-    public List<Course> getStudentCourses(
+    public ResponseEntity<List<CourseEnrollmentDTO>> getStudentCourses(
             @PathVariable("id") int studentId,
             @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
             @RequestParam(value = "pageSize", required = false) Integer pageSize
     ) throws StudentService.StudentNotfoundException {
-        Student student = studentService.getStudentById(studentId);
-        return student.getCourses();
+        // Verify student exists
+        studentService.getStudentById(studentId);
+        
+        if (pageNumber != null && pageSize != null) {
+            if (pageNumber < 0 || pageSize < 0) {
+                throw new IllegalArgumentException("Invalid page number or page size");
+            }
+            // 分頁查詢
+            Page<CourseEnrollmentDTO> page = enrollmentService.getStudentEnrollments(studentId, pageNumber, pageSize);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Total-Pages", String.valueOf(page.getTotalPages()));
+            headers.add("X-Total-Count", String.valueOf(page.getTotalElements()));
+            return ResponseEntity.ok().headers(headers).body(page.getContent());
+        } else {
+            // 無分頁查詢
+            List<CourseEnrollmentDTO> courses = enrollmentService.getStudentEnrollments(studentId);
+            return ResponseEntity.ok(courses);
+        }
     }
 
     @Operation(summary = "新增學生選課", description = "新增學生選課")
